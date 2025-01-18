@@ -41,10 +41,9 @@ RealisticAnimalLosses.modName = g_currentModName
 -- configuration
 RealisticAnimalLosses.noFoodLossesWaitingHours = 3
 
-RealisticAnimalLosses.riskAgeLossesRate = 3
-RealisticAnimalLosses.riskAgeLossesWaitingHours = 1
+RealisticAnimalLosses.riskAgeLossesRate = 10
 -- RealisticAnimalLosses.riskAnimalAgeInMonths = {HORSE=200, PIG=120, COW=160, SHEEP=80, CHICKEN=80}
-RealisticAnimalLosses.riskAnimalAgeInMonths = {HORSE=60, PIG=60, COW=60, SHEEP=60, CHICKEN=60}	-- currently the maximum age of animals in FS22 is 60 months/5 years
+RealisticAnimalLosses.riskAnimalAgeInMonths = {HORSE=60, PIG=40, COW=50, SHEEP=30, CHICKEN=30}	-- currently the maximum age of animals in FS22 is 60 months/5 years
 
 RealisticAnimalLosses.warningWaitingHours = 8
 RealisticAnimalLosses.hourForAction = 5		-- each first day in period
@@ -60,6 +59,8 @@ function RealisticAnimalLosses:loadMap(name)
 	g_messageCenter:subscribe(MessageType.HOUR_CHANGED, RealisticAnimalLosses.onHourChanged, RealisticAnimalLosses)
 	-- g_messageCenter:subscribe(MessageType.PERIOD_CHANGED, self.onPeriodChanged, self)
     -- g_messageCenter:subscribe(MessageType.HUSBANDRY_ANIMALS_CHANGED, self.onHusbandryAnimalsChanged, self)
+
+	math.randomseed(getDate("%S")+getDate("%M"))
 end
 
 
@@ -108,12 +109,13 @@ function RealisticAnimalLosses:onHourChanged(hour)
 					maxProabilityToLossAnimalsForAge = math.max(maxProabilityToLossAnimalsForAge, proability)
 
 					-- Let some animals go away
-					if RealisticAnimalLosses.hourForAction == hour then
+					if cluster.age > riskAnimalAge and RealisticAnimalLosses.hourForAction == hour then	-- one day after the riskAnimalAge warning
 						-- local riskFactor = 100 / RealisticAnimalLosses.riskAnimalAgeInMonths[husbandry.animalTypeName] * (cluster.age - riskAnimalAge + 1)
 						-- local numLostAnimals = RealisticAnimalLosses:probabilityCalculationNumOfHits(cluster.numAnimals, RealisticAnimalLosses.riskAgeLossesRate * riskFactor / g_currentMission.environment.daysPerPeriod)
 						local numLostAnimals = RealisticAnimalLosses:probabilityCalculationNumOfHits(cluster.numAnimals, proability)
 						if numLostAnimals > 0 then
-							cluster.numAnimals = cluster.numAnimals - numLostAnimals
+							local deleted = cluster:changeNumAnimals(numLostAnimals * -1)
+							-- cluster.numAnimals = cluster.numAnimals - numLostAnimals
 							sumNumRealisticAnimalLossesForAge = sumNumRealisticAnimalLossesForAge + numLostAnimals
 							dbPrintf("    --> Cluster: %s aminals Losses for age", numLostAnimals)
 						end
@@ -138,7 +140,8 @@ function RealisticAnimalLosses:onHourChanged(hour)
 					if RealisticAnimalLosses.clusterNumHoursWithoutFood[cluster] >= RealisticAnimalLosses.noFoodLossesWaitingHours and RealisticAnimalLosses.hourForAction == hour then
 						local numLostAnimals = RealisticAnimalLosses:probabilityCalculationNumOfHits(cluster.numAnimals, proability)
 						if numLostAnimals > 0 then
-							cluster.numAnimals = cluster.numAnimals - numLostAnimals
+							local deleted = cluster:changeNumAnimals(numLostAnimals * -1)
+							-- cluster.numAnimals = cluster.numAnimals - numLostAnimals
 							sumNumRealisticAnimalLossesForFood = sumNumRealisticAnimalLossesForFood + numLostAnimals
 							dbPrintf("    --> Cluster: %s aminals Losses for foodEffectivity and health", numLostAnimals)
 						end
