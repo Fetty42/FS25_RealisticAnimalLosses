@@ -1,5 +1,5 @@
 -- Author: Fetty42
--- Date: 08.12.2024
+-- Date: 31.01.2025
 -- Version: 1.0.0.0
 
 local dbPrintfOn = false
@@ -23,10 +23,15 @@ local function dbPrint(...)
 	end
 end
 
-local function dbPrintHeader(ftName)
+local function dbPrintHeader(funcName)
 	if dbPrintfOn then
-    	print(string.format("Call %s", ftName))
-    	-- print(string.format("Call %s: g_currentMission:getIsServer()=%s | g_currentMission:getIsClient()=%s", ftName, g_currentMission:getIsServer(), g_currentMission:getIsClient()))
+		if g_currentMission ~=nil and g_currentMission.missionDynamicInfo ~=nil then
+			print(string.format("Call %s: isDedicatedServer=%s | isServer()=%s | isMasterUser=%s | isMultiplayer=%s | isClient()=%s | farmId=%s", 
+							funcName, tostring(g_dedicatedServer~=nil), tostring(g_currentMission:getIsServer()), tostring(g_currentMission.isMasterUser), tostring(g_currentMission.missionDynamicInfo.isMultiplayer), tostring(g_currentMission:getIsClient()), tostring(g_currentMission:getFarmId())))
+		else
+			print(string.format("Call %s: isDedicatedServer=%s | g_currentMission=%s",
+							funcName, tostring(g_dedicatedServer~=nil), tostring(g_currentMission)))
+		end
 	end
 end
 
@@ -66,7 +71,7 @@ end
 
 function RealisticAnimalLosses:onHourChanged(hour)
 	dbPrintHeader("RealisticAnimalLosses:onHourChanged")
-	dbPrintf("  hour=%s | farmId=%s", hour, g_currentMission:getFarmId())
+	dbPrintf("  hour=%s | current farmId=%s", hour, g_currentMission:getFarmId())
 	
 	-- check each cluster for healthy and food
 	local farmId = g_currentMission:getFarmId();
@@ -78,16 +83,18 @@ function RealisticAnimalLosses:onHourChanged(hour)
 
 	for _,husbandry in pairs(g_currentMission.husbandrySystem.clusterHusbandries) do
 		local placeable = husbandry:getPlaceable()
-		if farmId~= nil and farmId ~= 0 and farmId ~= 15 and placeable.ownerFarmId == farmId then
+		local placeableFarmId = placeable:getOwnerFarmId()
+		if farmId~= nil and farmId ~= 0 and farmId ~= 15 and placeableFarmId == farmId then
 			local placeableName = placeable:getName()
 			local totalFood = placeable:getTotalFood()
 			local foodEffectivity = RealisticAnimalLosses:getFoodEffectivity(placeable)
+			local spec_husbandryAnimals = placeable.spec_husbandryAnimals
 
 			
-			local litersPerHour = 0
-			if placeable.spec_husbandryFood ~= nil then
-				litersPerHour = placeable.spec_husbandryFood.litersPerHour * g_currentMission.environment.timeAdjustment
-			end
+			-- local litersPerHour = 0
+			-- if placeable.spec_husbandryFood ~= nil then
+			--	litersPerHour = placeable.spec_husbandryFood.litersPerHour * g_currentMission.environment.timeAdjustment
+			-- end
 
 			dbPrintf("  - husbandry placeables:  Name=%s | AnimalType=%s | NumOfAnimals=%s | TotalFood=%s | FoodEffectivity=%s | getNumOfClusters=%s | litersPerHour=%s"
 				, placeableName, husbandry.animalTypeName, placeable:getNumOfAnimals(), totalFood, foodEffectivity, placeable:getNumOfClusters(), litersPerHour)
@@ -106,6 +113,7 @@ function RealisticAnimalLosses:onHourChanged(hour)
 				if cluster.age >= riskAnimalAge then
 					isWarningAge = true
 					proability = RealisticAnimalLosses.riskAgeLossesRate / g_currentMission.environment.daysPerPeriod
+					dbPrintf("      - check current animal age >= %s --> proability=%s", riskAnimalAge, proability)
 					maxProabilityToLossAnimalsForAge = math.max(maxProabilityToLossAnimalsForAge, proability)
 
 					-- Let some animals go away
@@ -115,19 +123,20 @@ function RealisticAnimalLosses:onHourChanged(hour)
 						local numLostAnimals = RealisticAnimalLosses:probabilityCalculationNumOfHits(cluster.numAnimals, proability)
 						if numLostAnimals > 0 then
 							local deleted = cluster:changeNumAnimals(numLostAnimals * -1)
+
 							-- cluster.numAnimals = cluster.numAnimals - numLostAnimals
 							sumNumRealisticAnimalLossesForAge = sumNumRealisticAnimalLossesForAge + numLostAnimals
-							dbPrintf("    --> Cluster: %s aminals Losses for age", numLostAnimals)
+							dbPrintf("      --> Cluster: %s aminals Losses for age", numLostAnimals)
 						end
 					end
 				end
 
 				-- check foodEffectivity and health
 				proability = math.max(0, 100 - (foodEffectivity * 1.3 + cluster.health))
-				dbPrintf("      - check foodEffectivity and health: foodEffectivity=%s | health=%s --> proability=%s", foodEffectivity, cluster.health, proability)
+				proability = proability / g_currentMission.environment.daysPerPeriod
 				if proability > 0 then
 					isWarningFood = true
-					proability = proability / g_currentMission.environment.daysPerPeriod
+					dbPrintf("      - check foodEffectivity=%s and health=%s --> proability=%s", foodEffectivity, cluster.health, proability)
 					maxProabilityToLossAnimalsForFood = math.max(maxProabilityToLossAnimalsForFood, proability)
 	
 					if RealisticAnimalLosses.clusterNumHoursWithoutFood[cluster] == nil then
@@ -141,20 +150,21 @@ function RealisticAnimalLosses:onHourChanged(hour)
 						local numLostAnimals = RealisticAnimalLosses:probabilityCalculationNumOfHits(cluster.numAnimals, proability)
 						if numLostAnimals > 0 then
 							local deleted = cluster:changeNumAnimals(numLostAnimals * -1)
+
 							-- cluster.numAnimals = cluster.numAnimals - numLostAnimals
 							sumNumRealisticAnimalLossesForFood = sumNumRealisticAnimalLossesForFood + numLostAnimals
-							dbPrintf("    --> Cluster: %s aminals Losses for foodEffectivity and health", numLostAnimals)
+							dbPrintf("      --> Cluster: %s aminals Losses for foodEffectivity and health", numLostAnimals)
 						end
 					end
-					
 				else
 					RealisticAnimalLosses.clusterNumHoursWithoutFood[cluster] = 0
 				end
-				
-				-- clean up
-				if cluster.numAnimals <= 0 then
-					table.remove(placeable:getClusters(), idx)
-				end
+			end
+
+			-- update visual animals and cluster
+			if sumNumRealisticAnimalLossesForAge > 0 or sumNumRealisticAnimalLossesForFood > 0 then
+				spec_husbandryAnimals.clusterSystem:updateNow()
+				spec_husbandryAnimals:updateVisualAnimals()
 			end
 
 			if sumNumRealisticAnimalLossesForAge > 0 then
@@ -164,14 +174,6 @@ function RealisticAnimalLosses:onHourChanged(hour)
 				isLossesNotification = true
 				RealisticAnimalLosses.numHoursAfterLastWarning = 0
 			end
-
-			-- if sumNumRealisticAnimalLossesForHealh > 0 then
-			-- 	local msgTxt = string.format(g_i18n:getText("txt_healthLossesMsg"), placeableName, sumNumRealisticAnimalLossesForHealh, RealisticAnimalLosses:getAnimalTitle(husbandry.animalTypeName, sumNumRealisticAnimalLossesForHealh > 1))
-			-- 	dbPrintf("  --> " .. msgTxt)
-			-- 	g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, msgTxt)
-			-- 	isLossesNotification = true
-			-- 	RealisticAnimalLosses.numHoursAfterLastWarning = 0
-			-- end
 				
 			if sumNumRealisticAnimalLossesForFood > 0 then
 				local msgTxt = string.format(g_i18n:getText("txt_foodLossesMsg"), placeableName, sumNumRealisticAnimalLossesForFood, RealisticAnimalLosses:getAnimalTitle(husbandry.animalTypeName, sumNumRealisticAnimalLossesForFood > 1))
@@ -204,6 +206,7 @@ end
 
 
 function RealisticAnimalLosses:probabilityCalculationNumOfHits(numOfTrials, proability)
+	-- dbPrintHeader("RealisticAnimalLosses:probabilityCalculationNumOfHits")
 	local numOfHits = 0
 
     for i=1, numOfTrials do
@@ -218,6 +221,7 @@ end
 
 
 function RealisticAnimalLosses:getAnimalTitle(animalTypeName, isPlural)
+	-- dbPrintHeader("RealisticAnimalLosses:getAnimalTitle")
 	local singular = "animal"
 	local plural = "animals"
 	
@@ -239,6 +243,7 @@ end
 
 
 function RealisticAnimalLosses:getFoodEffectivity(husbandry)
+	-- dbPrintHeader("RealisticAnimalLosses:getFoodEffectivity")
 	local effectivity = 0
     local spec = husbandry.spec_husbandryFood
 	if spec ~= nil and spec.animalTypeIndex ~= nil then
