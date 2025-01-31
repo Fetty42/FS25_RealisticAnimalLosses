@@ -24,11 +24,11 @@ Für Fehlermeldungen oder Anregungen besucht bitte: https://github.com/Fetty42/F
 
 		<en><![CDATA[Your animal populations may now decrease due to the following reasons:
 
-- when they get too old
+- when they get too old (10% risk)
   Horses from 60 months, pigs from 40 months, cows/buffaloes from 50 months, sheep/goats from 30 months, chickens/roosters from 30 months
   (Certainly not entirely realistic, but otherwise the effect is hardly noticeable)
 
-- if health and feed effectiveness are too low in total
+- if health and feed effectiveness are too low in total (up to 100% risk)
 
 The check takes place at 5 o'clock in the morning.
 If any of the above-mentioned risks are recognised during the day, you will be informed that you should take care of your animals.
@@ -39,11 +39,11 @@ For error messages or suggestions please visit: https://github.com/Fetty42/FS25_
 
 		<fr><![CDATA[Vos populations animales peuvent désormais diminuer pour les raisons suivantes :
 
-- quand ils deviennent trop vieux
+- quand ils deviennent trop vieux (10% de risque)
   Chevaux à partir de 60 mois, cochons à partir de 40 mois, vaches/buffles à partir de 50 mois, moutons/chèvres à partir de 30 mois, poules/coqs à partir de 30 mois.
   (ce n'est certainement pas très réaliste, mais sinon l'effet ne se fait guère sentir)
 
-- lorsque la santé et l'efficacité de l'alimentation sont trop faibles au total.
+- lorsque la santé et l'efficacité de l'alimentation sont trop faibles au total (jusqu'à 100% de risque)
 
 Le contrôle a lieu chaque matin à 5 heures.
 Si l'un des risques mentionnés ci-dessus est détecté au cours de la journée, tu recevras une information t'informant que tu dois prendre soin de tes animaux.
