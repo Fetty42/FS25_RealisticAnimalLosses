@@ -60,14 +60,14 @@ Pour les messages d'erreur ou les suggestions, veuillez visiter : https://githu
 	</extraSourceFiles>    
 	<l10n>
 		<text name="txt_ageLossesMsg">
-			<de>%s - Leider hast du %s %s wegen zu hohem Alter verloren!</de>
-			<en>%s - Unfortunately you lost %s %s because of too old age!</en>
-			<fr>%s - Malheureusement tu as perdu %s %s à cause d'un âge trop avancé!</fr>
+			<de>%s - Leider sind %s %s wegen zu hohem Alter verstorben!</de>
+			<en>%s - Unfortunately, %s %s died due to old age!</en>
+			<fr>%s - Malheureusement, %s %s sont morts de vieillesse!</fr>
         </text>		
 		<text name="txt_foodLossesMsg">
-			<de>%s - Leider hast du %s %s wegen fehlendem Futter/Gesundheit verloren!</de>
-			<en>%s - Unfortunately you lost %s %s due to lack of food/health!</en>
-			<fr>%s - Malheureusement, tu as perdu %s %s à cause du manque de nourriture/santé!</fr>
+			<de>%s - Leider sind %s %s wegen fehlendem Futter/Gesundheit verstorben!</de>
+			<en>%s - Unfortunately, %s %s died due to lack of food/health!</en>			
+			<fr>%s - Malheureusement, %s %s sont morts par manque de nourriture/santé!</fr>
         </text>		
 		<text name="txt_riskInfoMsgFood">
 			<de>Achtung, kümmere dich um deine Tiere (Futter/Gesundheit -> %s%% Risiko)!</de>
