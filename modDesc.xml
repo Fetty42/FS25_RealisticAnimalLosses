@@ -16,7 +16,7 @@
 - wenn Gesundheit und Futtereffektivität in Summe zu gering sind (bis 100% Risiko)
 
 Die Überprüfung findet jeweils morgens um 5 Uhr statt.
-Falls über den Tag eins der oben erwähnten Risiken erkannt wird, bekommst du eine Info, dass du dich um deine Tiere kümmern solltest.
+Falls über den Tag eines der oben erwähnten Risiken erkannt wird, bekommst du eine Info, dass du dich um deine Tiere kümmern solltest.
 
 Multiplayer-Kompatibilität wurde bisher noch nicht getestet.
 
@@ -70,38 +70,38 @@ Pour les messages d'erreur ou les suggestions, veuillez visiter : https://githu
 			<fr>%s - Malheureusement, tu as perdu %s %s à cause du manque de nourriture/santé!</fr>
         </text>		
 		<text name="txt_riskInfoMsgFood">
-			<de>Achtung, kümmere dich um deine Tiere (Futter/Gesundheit -> %s%% Risiko)!</de>
+			<de>Achtung! Kümmere dich um deine Tiere (Futter/Gesundheit -> %s%% Risiko)!</de>
 			<en>Attention, take care of your animals (food/health -> %s%% risk)!</en>
 			<fr>Attention, prenez soin de vos animaux (nourriture/santé -> %s%% risque)!</fr>
         </text>		
 		<text name="txt_riskInfoMsgAge">
-			<de>Achtung, kümmere dich um deine Tiere (Alter -> %s%% Risiko)!</de>
+			<de>Achtung! Kümmere dich um deine Tiere (Alter -> %s%% Risiko)!</de>
 			<en>Attention, take care of your animals (age -> %s%% risk)!</en>
 			<fr>Attention, prenez soin de vos animaux (âge -> %s%% risque)!</fr>
         </text>		
 		<text name="txt_horse">
-			<de>Pferd,Pferde</de>
-			<en>horse,horses</en>
+			<de>Pferd, Pferde</de>
+			<en>horse, horses</en>
 			<fr>cheval, chevaux</fr>
         </text>		
         <text name="txt_pig">
-			<de>Schwein,Schweine</de>
-			<en>pig,pigs</en>
-			<fr>cochon,cochons</fr>
+			<de>Schwein, Schweine</de>
+			<en>pig, pigs</en>
+			<fr>cochon, cochons</fr>
         </text>		
         <text name="txt_cow">
-			<de>Kuh,Kühe</de>
-			<en>cow,cows</en>
+			<de>Kuh, Kühe</de>
+			<en>cow, cows</en>
 			<fr>vache, vaches</fr>
         </text>		
         <text name="txt_sheep">
-			<de>Schaf,Schafe</de>
-			<en>sheep,sheep</en>
+			<de>Schaf, Schafe</de>
+			<en>sheep, sheep</en>
 			<fr>mouton, moutons</fr>
         </text>		
         <text name="txt_chicken">
-			<de>Huhn,Hühner</de>
-			<en>chicken,chickens</en>
+			<de>Huhn, Hühner</de>
+			<en>chicken, chickens</en>
 			<fr>poulet, poulets</fr>
         </text>		
 	</l10n>
