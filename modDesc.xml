@@ -1,4 +1,4 @@
-<modDesc descVersion="95">
+<modDesc descVersion="99">
 	<author>Fetty42</author>
 	<version>1.0.0.0</version>
 	<title>
@@ -106,14 +106,14 @@ Pour signaler une erreur ou faire une suggestion, rends-toi sur: https://github.
 			<fr>%s - Malheureusement tu as perdu %s %s à cause d'un âge trop avancé!</fr>
         </text>		
 		<text name="txt_foodLossesMsg">
-			<de>%s - Leider hast du %s %s wegen fehlendem Futter/Gesundheit/Wasser/Stroh verloren!</de>
-			<en>%s - Unfortunately you lost %s %s due to lack of food/health/water/straw!</en>
-			<fr>%s - Malheureusement, tu as perdu %s %s à cause du manque de nourriture/santé/eau/paille!</fr>
+			<de>%s - Leider hast du %s %s wegen fehlendem Futter/Wasser/Stroh verloren!</de>
+			<en>%s - Unfortunately you lost %s %s due to lack of food/water/straw!</en>
+			<fr>%s - Malheureusement, tu as perdu %s %s à cause du manque de nourriture/eau/paille!</fr>
         </text>		
 		<text name="txt_riskInfoMsgFood">
-			<de>%s - Achtung, kümmere dich um deine %s (Futter/Gesundheit/Wasser/Stroh -> %s%% Risiko)!</de>
-			<en>%s - Attention, take care of your %s (food/health/water/straw -> %s%% risk)!</en>
-			<fr>%s - Attention, prenez soin de vos %s (nourriture/santé/eau/paille -> %s%% risque)!</fr>
+			<de>%s - Achtung, kümmere dich um deine %s (Futter/Wasser/Stroh -> %s%% Risiko)!</de>
+			<en>%s - Attention, take care of your %s (food/water/straw -> %s%% risk)!</en>
+			<fr>%s - Attention, prenez soin de vos %s (nourriture/eau/paille -> %s%% risque)!</fr>
         </text>		
 		<text name="txt_riskInfoMsgAge">
 			<de>%s - Achtung, kümmere dich um deine %s (Alter -> %s%% Risiko)!</de>

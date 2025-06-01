@@ -27,7 +27,7 @@ function RealisticAnimalLossesUISettings:registerSettings()
     -- Define the UI controls. For each control, a <prefix>_<name>_short and _long key must exist in the i18n values
     local controlProperties =
     {
-        { name = "foodEffectivityThreshold",                   autoBind = true, nillable = false, min = 1, max = 90, step = 1 },
+        { name = "foodEffectivityThreshold",                   autoBind = true, nillable = false, min = 1, max = 100, step = 1 },
     }
 
     UIHelper.createControlsDynamically(settingsPage, "UISetting_title", self, controlProperties, "UISetting_")
