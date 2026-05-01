@@ -1,0 +1,9 @@
+---
+description: Project rule enabling FS25 modding skills.
+---
+
+Bei Aufgaben in diesem Repository handelt es sich um **Farming Simulator 25 (FS25) Mod-Entwicklung**.
+
+- Nutze die lokalen Skills unter `.cursor/skills/` (z. B. `fs25-scripting-mod`, `fs25-modding-debug`, `fs25-mod-deploy`), sobald es um FS25-spezifische Themen geht (Lua, XML, I3D, Texturen, Packaging/Deployment, Debugging).
+- Bevor du FS25-Lua-Code schreibst oder änderst: orientiere dich an Base-Game-Patterns (dekompilierte Scripts, wenn vorhanden) und halte dich an typische Spezialisierungs-/Event-Strukturen.
+- Bei Fehlern: arbeite systematisch über `log.txt` (Windows: `%USERPROFILE%\Documents\My Games\FarmingSimulator2025\log.txt`) und verifiziere Pfade/Node-Referenzen (I3D/i3dMappings/XML).
