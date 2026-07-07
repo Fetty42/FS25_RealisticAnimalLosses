@@ -1,6 +1,6 @@
-<modDesc descVersion="99">
+<modDesc descVersion="110">
 	<author>Fetty42</author>
-	<version>1.0.0.0</version>
+	<version>1.1.0.0</version>
 	<title>
         <en>Realistic Animal Losses</en>
 		<de>Realistische Tierverluste</de>
@@ -34,6 +34,10 @@ Jeden Abend wird automatisch geprüft, wie es um deine Tiere steht. Wenn Problem
 Multiplayer-kompatibel:
 Auch wenn ein Spieler im Multiplayer abwesend ist, werden dessen Ställe geprüft – das Tierwohl kennt keine Pausen! 
 
+Update 1.1.0:
+- Settings werden jetzt im jeweiligen Savegame-Verzeichnis gespeichert und die Verwendung im Multiplayer wurde korrigiert.
+- Warnmeldungen bzgl. des Alters und der Versorgung deiner Tiere angepasst.
+
 Bei Fehlermeldungen oder Anregungen besuche bitte: https://github.com/Fetty42/FS25_RealisticAnimalLosses/issues oder https://forum.giants-software.com/viewtopic.php?t=208708]]></de>
 		<en><![CDATA[More Realistic Animal Management – Finally Real Consequences for Neglect!
 
@@ -60,6 +64,10 @@ Every evening, an automatic check assesses the state of your animals. If problem
 
 Multiplayer Compatible:
 Even if a player is absent in multiplayer mode, their barns will still be checked – animal welfare doesn’t take breaks!
+
+Update 1.1.0:
+- Settings are now stored in the savegame directory and the multiplayer usage has been corrected.
+- Warning messages about the age and supply of your animals have been adjusted.
 
 For error reports or suggestions, please visit: https://github.com/Fetty42/FS25_RealisticAnimalLosses/issues or https://forum.giants-software.com/viewtopic.php?t=208708]]></en>
 
@@ -89,6 +97,10 @@ Chaque soir à 18h, une vérification automatique est effectuée pour évaluer l
 Compatible multijoueur:
 Même si un joueur est absent en multijoueur, ses étables seront tout de même contrôlées – le bien-être animal ne prend pas de pause !
 
+Update 1.1.0:
+- Les paramètres sont désormais stockés dans le répertoire du jeu sauvegardé et le comportement en multijoueur a été corrigé.
+- Les messages d’avertissement concernant l’âge et la fourniture de tes animaux ont été ajustés.
+
 Pour signaler une erreur ou faire une suggestion, rends-toi sur: https://github.com/Fetty42/FS25_RealisticAnimalLosses/issues ou https://forum.giants-software.com/viewtopic.php?t=208708]]></fr>
     </description>
 	
@@ -96,6 +108,8 @@ Pour signaler une erreur ou faire une suggestion, rends-toi sur: https://github.
 	<multiplayer supported="true" />
 	<extraSourceFiles>
 		<sourceFile filename="lib/UIHelper.lua" />
+		<sourceFile filename="events/RealisticAnimalLossesSettingsInitialEvent.lua" />
+		<sourceFile filename="events/RealisticAnimalLossesSettingsEvent.lua" />
 		<sourceFile filename="RealisticAnimalLossesUISettings.lua" />
 		<sourceFile filename="RealisticAnimalLosses.lua" />
 	</extraSourceFiles>    
@@ -111,14 +125,14 @@ Pour signaler une erreur ou faire une suggestion, rends-toi sur: https://github.
 			<fr>%s - Malheureusement, tu as perdu %s %s à cause du manque de nourriture/eau/paille!</fr>
         </text>		
 		<text name="txt_riskInfoMsgFood">
-			<de>%s - Achtung, kümmere dich um deine %s (Futter/Wasser/Stroh -> %s%% Risiko)!</de>
-			<en>%s - Attention, take care of your %s (food/water/straw -> %s%% risk)!</en>
+			<de>%s - Achtung, kümmere dich um die Versorgung deiner %s -> %s%% Risiko!</de>
+			<en>%s - Attention, take care of your %s supply -> %s%% risk!</en>
 			<fr>%s - Attention, prenez soin de vos %s (nourriture/eau/paille -> %s%% risque)!</fr>
         </text>		
 		<text name="txt_riskInfoMsgAge">
-			<de>%s - Achtung, kümmere dich um deine %s (Alter -> %s%% Risiko)!</de>
-			<en>%s - Attention, take care of your %s (age -> %s%% risk)!</en>
-			<fr>%s - Attention, prenez soin de vos %s (âge -> %s%% risque)!</fr>
+			<de>%s - Achtung, kümmere dich um deine alten %s -> %s%% Risiko!</de>
+			<en>%s - Attention, take care of your old %s -> %s%% risk!</en>
+			<fr>%s - Attention, prenez soin de vos animaux âgés -> %s%% risque!</fr>
         </text>		
 		<text name="txt_horse">
 			<de>Pferd,Pferde</de>

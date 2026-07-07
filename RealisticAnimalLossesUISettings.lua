@@ -1,6 +1,4 @@
 -- Author: Fetty42
--- Date: 02.03.2025
--- Version: 1.0.0.0
 
 RealisticAnimalLossesUISettings = {}
 
@@ -49,7 +47,8 @@ end
 
 
 function RealisticAnimalLossesUISettings:onSettingsChange()
-    self:updateUiElements()
+	RealisticAnimalLosses:onSettingChanged(false)
+	self:updateUiElements()
 end
 
 ---Updates the UI elements to reflect the current settings

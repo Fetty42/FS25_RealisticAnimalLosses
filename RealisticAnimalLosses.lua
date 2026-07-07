@@ -1,7 +1,4 @@
----@diagnostic disable: lowercase-global
 -- Author: Fetty42
--- Date: 31.01.2025
--- Version: 1.0.0.0
 
 local dbPrintfOn = false
 local dbInfoPrintfOn = false
@@ -46,6 +43,11 @@ RealisticAnimalLosses.modName = g_currentModName
 RealisticAnimalLosses.isInitSettingUI = false
 RealisticAnimalLosses.settings = {}
 
+RealisticAnimalLosses.SAVEGAME_SETTINGS_FILE = "FS25_RealisticAnimalLosses.xml"
+RealisticAnimalLosses.MODSETTINGS_LEGACY_FILE = "RealisticAnimalLosses.xml"
+RealisticAnimalLosses.XML_ROOT = "RealisticAnimalLosses"
+RealisticAnimalLosses.DEFAULT_FOOD_EFFECTIVITY_THRESHOLD = 90
+
 
 -- configuration
 RealisticAnimalLosses.riskAgeLossesRate = 10
@@ -77,6 +79,7 @@ function RealisticAnimalLosses:loadMap(name)
 
 	InGameMenu.onMenuOpened = Utils.appendedFunction(InGameMenu.onMenuOpened, RealisticAnimalLosses.initSettingUI)
 	FSBaseMission.saveSavegame = Utils.appendedFunction(FSBaseMission.saveSavegame, RealisticAnimalLosses.saveSettings)
+	FSBaseMission.sendInitialClientState = Utils.appendedFunction(FSBaseMission.sendInitialClientState, RealisticAnimalLosses.sendInitialClientState)
 
 	RealisticAnimalLosses:loadSettings()
 end
@@ -85,52 +88,129 @@ end
 function RealisticAnimalLosses:defaultSettings()
 	dbPrintHeader("RealisticAnimalLosses:defaultSettings")
 
-	RealisticAnimalLosses.settings.foodEffectivityThreshold = 90	-- Threshold value for food effectivity below which the "losses rate" begins to increase
+	RealisticAnimalLosses.settings.foodEffectivityThreshold = RealisticAnimalLosses.DEFAULT_FOOD_EFFECTIVITY_THRESHOLD
+end
+
+
+function RealisticAnimalLosses:getSavegameSettingsFilePath()
+	if g_currentMission ~= nil and g_currentMission.missionInfo ~= nil and g_currentMission.missionInfo.savegameDirectory ~= nil then
+		return g_currentMission.missionInfo.savegameDirectory .. "/" .. RealisticAnimalLosses.SAVEGAME_SETTINGS_FILE
+	end
+
+	return nil
+end
+
+
+function RealisticAnimalLosses:getModSettingsLegacyFilePath()
+	return getUserProfileAppPath() .. "modSettings/" .. RealisticAnimalLosses.MODSETTINGS_LEGACY_FILE
+end
+
+
+function RealisticAnimalLosses:parseSettingsFromXmlFile(fileNamePath)
+	if not fileExists(fileNamePath) then
+		return nil
+	end
+
+	local xmlFile = loadXMLFile("RealisticAnimalLossesSettings", fileNamePath)
+	if xmlFile == 0 then
+		dbPrintf("  Could not read the data from XML file (%s), maybe the XML file is empty or corrupted.", fileNamePath)
+		return nil
+	end
+
+	local foodEffectivityThreshold = getXMLInt(xmlFile, RealisticAnimalLosses.XML_ROOT .. ".settings#foodEffectivityThreshold")
+	delete(xmlFile)
+
+	if foodEffectivityThreshold == nil or foodEffectivityThreshold < 1 or foodEffectivityThreshold > 100 then
+		dbPrintf("  Could not parse a valid 'foodEffectivityThreshold' value from the XML file (%s).", fileNamePath)
+		return nil
+	end
+
+	return foodEffectivityThreshold
+end
+
+
+function RealisticAnimalLosses:writeSettingsToXmlFile(fileNamePath)
+	local xmlFile = createXMLFile("RealisticAnimalLossesSettings", fileNamePath, RealisticAnimalLosses.XML_ROOT)
+	setXMLInt(xmlFile, RealisticAnimalLosses.XML_ROOT .. ".settings#foodEffectivityThreshold", RealisticAnimalLosses.settings.foodEffectivityThreshold)
+	saveXMLFile(xmlFile)
+	delete(xmlFile)
 end
 
 
 function RealisticAnimalLosses:saveSettings()
 	dbPrintHeader("RealisticAnimalLosses:saveSettings")
 
-	local modSettingsDir = getUserProfileAppPath() .. "modSettings"
-	local fileName = "RealisticAnimalLosses.xml"
-	local createXmlFile = modSettingsDir .. "/" .. fileName
+	if g_currentMission == nil or not g_currentMission:getIsServer() then
+		return
+	end
 
-	local xmlFile = createXMLFile("RealisticAnimalLosses", createXmlFile, "RealisticAnimalLosses")
-	setXMLInt(xmlFile, "RealisticAnimalLosses.settings#foodEffectivityThreshold",RealisticAnimalLosses.settings.foodEffectivityThreshold)
+	local savegameSettingsPath = RealisticAnimalLosses:getSavegameSettingsFilePath()
+	if savegameSettingsPath == nil then
+		dbPrintf("  No savegame directory available, settings were not saved.")
+		return
+	end
 
-	saveXMLFile(xmlFile)
-	delete(xmlFile)
+	RealisticAnimalLosses:writeSettingsToXmlFile(savegameSettingsPath)
+	dbPrintf("  Saved settings to savegame file (%s).", savegameSettingsPath)
 end
 
 
 function RealisticAnimalLosses:loadSettings()
 	dbPrintHeader("RealisticAnimalLosses:loadSettings")
 
-	local modSettingsDir = getUserProfileAppPath() .. "modSettings"
-	local fileName = "RealisticAnimalLosses.xml"
-	local fileNamePath = modSettingsDir .. "/" .. fileName
+	if g_currentMission == nil or not g_currentMission:getIsServer() then
+		RealisticAnimalLosses:defaultSettings()
+		dbPrintf("  Client uses default settings until server sync.")
+		return
+	end
 
-	if fileExists(fileNamePath) then
-		local xmlFile = loadXMLFile("RealisticAnimalLosses", fileNamePath)
-		
-		if xmlFile == 0 then
-			dbPrintf("  Could not read the data from XML file (%s), maybe the XML file is empty or corrupted, using the default!", fileNamePath)
-			RealisticAnimalLosses:defaultSettings()
-			return
-		end
+	local foodEffectivityThreshold = nil
+	local loadedFrom = nil
 
-		local foodEffectivityThreshold = getXMLInt(xmlFile, "RealisticAnimalLosses.settings#foodEffectivityThreshold")
-		if foodEffectivityThreshold == nil or foodEffectivityThreshold == 0 then
-			dbPrintf("  Could not parse the correct 'foodEffectivityThreshold' value from the XML file, maybe it is corrupted, using the default!")
-			foodEffectivityThreshold = 4
+	local savegameSettingsPath = RealisticAnimalLosses:getSavegameSettingsFilePath()
+	if savegameSettingsPath ~= nil then
+		foodEffectivityThreshold = RealisticAnimalLosses:parseSettingsFromXmlFile(savegameSettingsPath)
+		if foodEffectivityThreshold ~= nil then
+			loadedFrom = "savegame"
+			dbPrintf("  Loaded settings from savegame file (%s).", savegameSettingsPath)
 		end
+	end
+
+	if foodEffectivityThreshold == nil then
+		local legacySettingsPath = RealisticAnimalLosses:getModSettingsLegacyFilePath()
+		foodEffectivityThreshold = RealisticAnimalLosses:parseSettingsFromXmlFile(legacySettingsPath)
+		if foodEffectivityThreshold ~= nil then
+			loadedFrom = "modSettings"
+			dbPrintf("  Loaded settings from legacy modSettings file (%s).", legacySettingsPath)
+		end
+	end
+
+	if foodEffectivityThreshold ~= nil then
 		RealisticAnimalLosses.settings.foodEffectivityThreshold = foodEffectivityThreshold
 
-		delete(xmlFile)
+		if loadedFrom == "modSettings" and g_currentMission ~= nil and g_currentMission:getIsServer() then
+			dbPrintf("  Migrating legacy modSettings to savegame file.")
+			RealisticAnimalLosses:saveSettings()
+		end
 	else
 		RealisticAnimalLosses:defaultSettings()
-		dbPrintf("  NOT any File founded!, using the default settings.")
+		dbPrintf("  No settings file found, using default settings.")
+	end
+end
+
+
+function RealisticAnimalLosses:onSettingChanged(noEventSend)
+	dbPrintHeader("RealisticAnimalLosses:onSettingChanged")
+
+	if g_currentMission:getIsServer() or g_currentMission.isMasterUser then
+		RealisticAnimalLossesSettingsEvent.sendEvent(noEventSend)
+	end
+end
+
+
+function RealisticAnimalLosses.sendInitialClientState(mission, connection, user, farm)
+	if g_currentMission:getIsServer() then
+		connection:sendEvent(RealisticAnimalLossesSettingsInitialEvent.new(RealisticAnimalLosses.settings.foodEffectivityThreshold))
 	end
 end
 
@@ -155,8 +235,18 @@ end
 
 
 function RealisticAnimalLosses:onHourChanged(hour)
+	local environment = g_currentMission.environment
+	local beginningPeriod = 6
 	dbPrintHeader("RealisticAnimalLosses:onHourChanged")
-	dbPrintf("  hour=%s", hour)
+	dbPrintf("  hour=%s | currentPeriod=%s | currentYear=%s | Assumed beginning Period=%s", hour, environment.currentPeriod, environment.currentYear, beginningPeriod)
+
+	if environment ~= nil then
+		if environment.currentYear == 1 and environment.currentPeriod - beginningPeriod < 1 then
+			-- skip the first period
+			dbPrintf("  skip the first period")
+			return
+		end
+	end
 
 	-- check each cluster for healthy and food
 	if g_currentMission:getIsServer() then
@@ -183,11 +273,14 @@ function CheckAllFarmHusbandries(farmId, hour)
 		if farmId == placeableFarmId then
 			local placeableName = placeable:getName()
 			local totalFood = placeable:getTotalFood()
-			local foodEffectivity, isSequentiel = RealisticAnimalLosses:getFoodEffectivity(placeable)
 			local spec_husbandryAnimals = placeable.spec_husbandryAnimals
 
-			dbPrintf("  - husbandry placeables:  placeable farmId=%s | Name=%s | AnimalType=%s | NumOfAnimals=%s | TotalFood=%s | isSequentiel=%s | FoodEffectivity=%s | getNumOfClusters=%s",
-				placeableFarmId, placeableName, husbandry.animalTypeName, placeable:getNumOfAnimals(), totalFood, tostring(isSequentiel), foodEffectivity, placeable:getNumOfClusters())
+			dbPrintf("  - husbandry placeables:  placeable farmId=%s | Name=%s | AnimalType=%s | NumOfAnimals=%s | TotalFood=%s | getNumOfClusters=%s",
+				placeableFarmId, placeableName, husbandry.animalTypeName, placeable:getNumOfAnimals(), totalFood, placeable:getNumOfClusters())
+
+			local foodEffectivity, isSequentiel = RealisticAnimalLosses:getFoodEffectivity(placeable)
+
+			dbPrintf("    - isSequentiel=%s | FoodEffectivity=%s", tostring(isSequentiel), foodEffectivity)
 
 			-- if dbPrintfOn then
 			-- 	local str = string.format("Check husbandry placeables: %s (farmId=%s)", placeableName, placeableFarmId)
@@ -397,10 +490,10 @@ function RealisticAnimalLosses:getFoodEffectivity(husbandry)
 						fillLevel = fillLevel + specFood.fillLevels[fillTypeIndex]
 					end
 					if specMeadow ~= nil and specMeadow.fillLevels ~= nil and specMeadow.fillLevels[fillTypeIndex] ~= nil then
-						dbPrintf("  - Meadow filltype (%s) found for food effectivity calculation (fill level=%s)", g_fillTypeManager:getFillTypeNameByIndex(fillTypeIndex), specMeadow.fillLevels[fillTypeIndex])
+						dbPrintf("    - Meadow filltype (%s) found for food effectivity calculation (fill level=%s)", g_fillTypeManager:getFillTypeNameByIndex(fillTypeIndex), specMeadow.fillLevels[fillTypeIndex])
 						fillLevel = fillLevel + specMeadow.fillLevels[fillTypeIndex]
 						if specMeadow.fillLevels[fillTypeIndex] > 0  and foodGroup.productionWeight ~= specMeadow.productionWeight then
-							dbPrintf("    - Attention: Meadow productionWeight (%s) ~= foodGroup productionWeight (%s) --> Using foodGroup productionWeight", specMeadow.productionWeight, foodGroup.productionWeight)
+							dbPrintf("      - Attention: Meadow productionWeight (%s) ~= foodGroup productionWeight (%s) --> Using foodGroup productionWeight", specMeadow.productionWeight, foodGroup.productionWeight)
 						end
 					end
 				end
